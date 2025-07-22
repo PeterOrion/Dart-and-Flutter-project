@@ -36,55 +36,89 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   String selectedFilter = 'All';
-
+  String searchQuery = '';
   List<String> filters = ['All', 'Free', 'Affordable'];
 
   List<Clinic> get filteredClinics {
+    List<Clinic> filtered = allClinics;
+
+    // Filter by affordability
     if (selectedFilter == 'Free') {
-      return allClinics.where((clinic) => clinic.price.toLowerCase() == 'free').toList();
+      filtered = filtered.where((c) => c.price.toLowerCase() == 'free').toList();
     } else if (selectedFilter == 'Affordable') {
-      return allClinics.where((clinic) {
-        if (clinic.price.toLowerCase() == 'free') return true;
-        final amount = int.tryParse(clinic.price.replaceAll(RegExp(r'[^\d]'), '')) ?? 9999;
+      filtered = filtered.where((c) {
+        if (c.price.toLowerCase() == 'free') return true;
+        final amount = int.tryParse(c.price.replaceAll(RegExp(r'[^\d]'), '')) ?? 9999;
         return amount <= 1000;
       }).toList();
-    } else {
-      return allClinics;
     }
+
+    // Filter by search query
+    if (searchQuery.isNotEmpty) {
+      filtered = filtered
+          .where((c) => c.name.toLowerCase().contains(searchQuery.toLowerCase()))
+          .toList();
+    }
+
+    return filtered;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Clinic Finder')),
+      appBar: AppBar(
+        title: Text('Clinic Finder'),
+      ),
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Dropdown Filter
+          // 🔍 Search Bar
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: DropdownButton<String>(
-              value: selectedFilter,
-              items: filters.map((filter) {
-                return DropdownMenuItem<String>(
-                  value: filter,
-                  child: Text(filter),
-                );
-              }).toList(),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search clinics...',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
               onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    selectedFilter = value;
-                  });
-                }
+                setState(() {
+                  searchQuery = value;
+                });
               },
             ),
           ),
 
-          // Clinic List
+          // 🔽 Filter Dropdown
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              children: [
+                Text('Filter by: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                SizedBox(width: 8),
+                DropdownButton<String>(
+                  value: selectedFilter,
+                  items: filters.map((filter) {
+                    return DropdownMenuItem<String>(
+                      value: filter,
+                      child: Text(filter),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        selectedFilter = value;
+                      });
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+
+          // 📋 Clinic List
           Expanded(
             child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.all(16),
               itemCount: filteredClinics.length,
               itemBuilder: (context, index) {
                 return ClinicCard(clinic: filteredClinics[index]);
