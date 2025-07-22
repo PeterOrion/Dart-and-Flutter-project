@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/clinic.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import '../screens/clinic_detail_screen.dart';
 
 class ClinicCard extends StatelessWidget {
   final Clinic clinic;
@@ -14,7 +15,10 @@ class ClinicCard extends StatelessWidget {
       margin: EdgeInsets.symmetric(vertical: 10),
       child: ListTile(
         contentPadding: EdgeInsets.all(16),
-        title: Text(clinic.name, style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          clinic.name,
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -36,9 +40,15 @@ class ClinicCard extends StatelessWidget {
         ),
         trailing: Icon(Icons.arrow_forward_ios),
         onTap: () {
-          // Navigate to detail screen (coming later)
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ClinicDetailScreen(clinic: clinic),
+            ),
+          );
         },
       ),
     );
   }
 }
+
